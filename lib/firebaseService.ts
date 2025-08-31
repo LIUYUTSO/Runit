@@ -25,10 +25,10 @@ export interface User {
 }
 
 export interface Request {
-  id?: string
+  id: string // 改为必需的
   roomNumber?: string
   guestName?: string
-  requestType: 'HOUSEKEEPING' | 'MAINTENANCE' | 'AMENITIES' | 'CLEANING' | 'TURNDOWN' | 'OTHER'
+  requestType: string // 改为string以支持所有酒店物品类型
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   description: string

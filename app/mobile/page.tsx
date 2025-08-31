@@ -395,7 +395,7 @@ export default function MobilePage() {
               {request.status === 'PENDING' && (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => updateRequestStatus(request.id, 'COMPLETED')}
+                    onClick={() => updateRequestStatus(request.id!, 'COMPLETED')}
                     className="flex-1 bg-white text-black py-2 px-3 border-2 border-black text-sm font-medium hover:bg-black hover:text-white transition-colors rounded"
                   >
                     COMPLETED
