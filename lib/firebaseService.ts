@@ -170,9 +170,20 @@ export const requestService = {
   // 更新请求
   async updateRequest(id: string, updateData: Partial<Request>): Promise<RequestWithUsers | null> {
     try {
-      console.log('Updating request in Firebase:', id, updateData)
+      console.log('=== FIREBASE UPDATE REQUEST ===')
+      console.log('Document ID:', id)
+      console.log('Update data:', updateData)
       
       const docRef = doc(db, 'requests', id)
+      
+      // 检查文档是否存在
+      const docSnapBefore = await getDoc(docRef)
+      if (!docSnapBefore.exists()) {
+        console.error('Document does not exist:', id)
+        return null
+      }
+      
+      console.log('Document exists, current data:', docSnapBefore.data())
       
       // 准备更新数据
       const updatePayload = {
@@ -187,23 +198,26 @@ export const requestService = {
       
       console.log('Update payload:', updatePayload)
       
+      // 执行更新
       await updateDoc(docRef, updatePayload)
+      console.log('Update operation completed')
       
       // 获取更新后的文档
-      const docSnap = await getDoc(docRef)
-      if (!docSnap.exists()) {
+      const docSnapAfter = await getDoc(docRef)
+      if (!docSnapAfter.exists()) {
         console.error('Document not found after update:', id)
         return null
       }
       
-      const data = docSnap.data()
+      const data = docSnapAfter.data()
       console.log('Updated document data:', data)
       
+      // 获取关联的用户信息
       const createdBy = data?.createdById ? await userService.getUserById(data.createdById) : null
       const assignedTo = data?.assignedToId ? await userService.getUserById(data.assignedToId) : null
       
       const result = {
-        id: docSnap.id,
+        id: docSnapAfter.id,
         ...data,
         createdBy,
         assignedTo
@@ -212,7 +226,13 @@ export const requestService = {
       console.log('Final result:', result)
       return result
     } catch (error) {
-      console.error('更新请求失败:', error)
+      console.error('Firebase update error:', error)
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack
+        })
+      }
       return null
     }
   },

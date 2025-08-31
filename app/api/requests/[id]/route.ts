@@ -7,29 +7,41 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('=== PATCH REQUEST RECEIVED ===')
+    console.log('URL:', request.url)
+    console.log('Params:', params)
+    console.log('Request ID from params:', params.id)
+    
     const body = await request.json()
+    console.log('Request body:', body)
+    
     const { status, assignedToId, notes } = body
     
-    console.log('PATCH request received:', { id: params.id, body })
+    console.log('Extracted data:', { status, assignedToId, notes })
 
     if (!params.id) {
+      console.error('Request ID is missing from params')
       return NextResponse.json(
         { error: 'Request ID is required' },
         { status: 400 }
       )
     }
 
+    console.log('Calling requestService.updateRequest with:', params.id, { status, assignedToId, notes })
+    
     const updatedRequest = await requestService.updateRequest(params.id, {
       status,
       assignedToId,
       notes,
     })
 
-    console.log('Update result:', updatedRequest)
+    console.log('Update result from service:', updatedRequest)
 
     if (updatedRequest) {
+      console.log('Returning success response')
       return NextResponse.json(updatedRequest)
     } else {
+      console.error('Service returned null/undefined')
       return NextResponse.json(
         { error: 'Failed to update request' },
         { status: 500 }

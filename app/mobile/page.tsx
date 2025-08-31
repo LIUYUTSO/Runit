@@ -172,7 +172,20 @@ export default function MobilePage() {
   const updateRequestStatus = async (requestId: string, status: string) => {
     try {
       setIsLoading(true)
-      console.log('Updating request status:', requestId, 'to', status)
+      console.log('=== UPDATE REQUEST STATUS ===')
+      console.log('Request ID:', requestId)
+      console.log('New Status:', status)
+      console.log('Current requests:', requests)
+      
+      // 验证请求ID是否存在
+      const requestExists = requests.find(req => req.id === requestId)
+      if (!requestExists) {
+        console.error('Request not found in local state:', requestId)
+        toast.error('Request not found')
+        return
+      }
+      
+      console.log('Found request:', requestExists)
       
       const response = await fetch(`/api/requests/${requestId}`, {
         method: 'PATCH',
@@ -183,6 +196,7 @@ export default function MobilePage() {
       })
 
       console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
       
       if (response.ok) {
         const result = await response.json()
@@ -190,13 +204,15 @@ export default function MobilePage() {
         toast.success('Status updated successfully')
         
         // 立即更新本地状态
-        setRequests(prevRequests => 
-          prevRequests.map(req => 
+        setRequests(prevRequests => {
+          const updated = prevRequests.map(req => 
             req.id === requestId 
               ? { ...req, status, completedAt: status === 'COMPLETED' ? new Date().toISOString() : req.completedAt }
               : req
           )
-        )
+          console.log('Updated local state:', updated)
+          return updated
+        })
         
         // 如果标记为完成，切换到completed标签页
         if (status === 'COMPLETED') {
