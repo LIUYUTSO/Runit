@@ -35,7 +35,7 @@ export interface Request {
   notes?: string
   location?: string
   createdById: string
-  assignedToId?: string
+  assignedToId?: string | null
   createdAt?: any
   updatedAt?: any
   completedAt?: any
@@ -127,8 +127,13 @@ export const requestService = {
   // 创建请求
   async createRequest(requestData: Omit<Request, 'id' | 'createdAt' | 'updatedAt'>): Promise<Request | null> {
     try {
+      // 过滤掉 undefined 值，保留 null 值
+      const cleanData = Object.fromEntries(
+        Object.entries(requestData).filter(([_, value]) => value !== undefined)
+      )
+      
       const docRef = await addDoc(collection(db, 'requests'), {
-        ...requestData,
+        ...cleanData,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       })

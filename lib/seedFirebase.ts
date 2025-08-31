@@ -58,7 +58,7 @@ async function seedFirebase() {
         notes: '',
         location: '2樓',
         createdById: supervisor?.id || '',
-        assignedToId: housePerson1?.id,
+        assignedToId: housePerson1?.id || null,
       },
       {
         roomNumber: '312',
@@ -81,7 +81,7 @@ async function seedFirebase() {
         notes: '已完成清潔',
         location: '大廳',
         createdById: supervisor?.id || '',
-        assignedToId: housePerson2?.id,
+        assignedToId: housePerson2?.id || null,
       },
       {
         roomNumber: '408',
@@ -97,7 +97,11 @@ async function seedFirebase() {
     ]
 
     for (const request of requests) {
-      await requestService.createRequest(request)
+      // 过滤掉 undefined 值
+      const cleanRequest = Object.fromEntries(
+        Object.entries(request).filter(([_, value]) => value !== undefined)
+      )
+      await requestService.createRequest(cleanRequest as any)
     }
 
     console.log('✅ 需求创建完成')
