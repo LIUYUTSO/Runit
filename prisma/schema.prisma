@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  role      UserRole
+  email     String?  @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关联关系
+  assignedRequests Request[] @relation("AssignedRequests")
+  createdRequests  Request[] @relation("CreatedRequests")
+
+  @@map("users")
+}
+
+model Request {
+  id          String        @id @default(cuid())
+  roomNumber  String?
+  guestName   String?
+  requestType RequestType
+  priority    Priority      @default(MEDIUM)
+  status      RequestStatus @default(PENDING)
+  description String
+  notes       String?
+  
+  // 关联用户
+  createdBy   User    @relation("CreatedRequests", fields: [createdById], references: [id])
+  createdById String
+  assignedTo  User?   @relation("AssignedRequests", fields: [assignedToId], references: [id])
+  assignedToId String?
+  
+  // 时间戳
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+  
+  // 位置信息
+  location    String?
+  
+  @@map("requests")
+}
+
+enum UserRole {
+  SUPERVISOR
+  HOUSE_PERSON
+  RUNNER
+}
+
+enum RequestType {
+  HOUSEKEEPING
+  MAINTENANCE
+  AMENITIES
+  CLEANING
+  TURNDOWN
+  OTHER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+} 

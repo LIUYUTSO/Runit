@@ -1,0 +1,36 @@
+{
+  "name": "runit",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "@vercel/postgres": "^0.5.1",
+    "autoprefixer": "^10.4.16",
+    "date-fns": "^2.30.0",
+    "lucide-react": "^0.294.0",
+    "next": "14.0.4",
+    "postcss": "^8.4.32",
+    "prisma": "^5.7.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
+    "tailwindcss": "^3.3.6",
+    "tsx": "^4.20.5",
+    "vercel": "^33.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "typescript": "^5"
+  }
+}
