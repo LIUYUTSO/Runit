@@ -125,11 +125,17 @@ export const requestService = {
   },
 
   // 创建请求
-  async createRequest(requestData: Omit<Request, 'id' | 'createdAt' | 'updatedAt'>): Promise<Request | null> {
+  async createRequest(requestData: Partial<Omit<Request, 'id' | 'createdAt' | 'updatedAt'>> & { description: string; requestType: Request['requestType']; priority: Request['priority']; createdById: string }): Promise<Request | null> {
     try {
+      // 设置默认值
+      const dataWithDefaults = {
+        status: 'PENDING' as const,
+        ...requestData
+      }
+      
       // 过滤掉 undefined 值，保留 null 值
       const cleanData = Object.fromEntries(
-        Object.entries(requestData).filter(([_, value]) => value !== undefined)
+        Object.entries(dataWithDefaults).filter(([_, value]) => value !== undefined)
       )
       
       const docRef = await addDoc(collection(db, 'requests'), {
