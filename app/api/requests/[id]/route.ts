@@ -9,6 +9,15 @@ export async function PATCH(
   try {
     const body = await request.json()
     const { status, assignedToId, notes } = body
+    
+    console.log('PATCH request received:', { id: params.id, body })
+
+    if (!params.id) {
+      return NextResponse.json(
+        { error: 'Request ID is required' },
+        { status: 400 }
+      )
+    }
 
     const updatedRequest = await requestService.updateRequest(params.id, {
       status,
@@ -16,18 +25,20 @@ export async function PATCH(
       notes,
     })
 
+    console.log('Update result:', updatedRequest)
+
     if (updatedRequest) {
       return NextResponse.json(updatedRequest)
     } else {
       return NextResponse.json(
-        { error: '更新需求失败' },
+        { error: 'Failed to update request' },
         { status: 500 }
       )
     }
   } catch (error) {
-    console.error('更新需求失败:', error)
+    console.error('Update request error:', error)
     return NextResponse.json(
-      { error: '更新需求失败' },
+      { error: 'Failed to update request' },
       { status: 500 }
     )
   }
@@ -42,17 +53,17 @@ export async function DELETE(
     const success = await requestService.deleteRequest(params.id)
     
     if (success) {
-      return NextResponse.json({ message: '需求已删除' })
+      return NextResponse.json({ message: 'Request deleted successfully' })
     } else {
       return NextResponse.json(
-        { error: '删除需求失败' },
+        { error: 'Failed to delete request' },
         { status: 500 }
       )
     }
   } catch (error) {
-    console.error('删除需求失败:', error)
+    console.error('Delete request error:', error)
     return NextResponse.json(
-      { error: '删除需求失败' },
+      { error: 'Failed to delete request' },
       { status: 500 }
     )
   }

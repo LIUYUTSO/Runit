@@ -170,24 +170,47 @@ export const requestService = {
   // 更新请求
   async updateRequest(id: string, updateData: Partial<Request>): Promise<RequestWithUsers | null> {
     try {
+      console.log('Updating request in Firebase:', id, updateData)
+      
       const docRef = doc(db, 'requests', id)
-      await updateDoc(docRef, {
+      
+      // 准备更新数据
+      const updatePayload = {
         ...updateData,
         updatedAt: serverTimestamp(),
-        completedAt: updateData.status === 'COMPLETED' ? serverTimestamp() : updateData.completedAt
-      })
+      }
       
+      // 如果状态是COMPLETED，添加completedAt时间戳
+      if (updateData.status === 'COMPLETED') {
+        updatePayload.completedAt = serverTimestamp()
+      }
+      
+      console.log('Update payload:', updatePayload)
+      
+      await updateDoc(docRef, updatePayload)
+      
+      // 获取更新后的文档
       const docSnap = await getDoc(docRef)
+      if (!docSnap.exists()) {
+        console.error('Document not found after update:', id)
+        return null
+      }
+      
       const data = docSnap.data()
+      console.log('Updated document data:', data)
+      
       const createdBy = data?.createdById ? await userService.getUserById(data.createdById) : null
       const assignedTo = data?.assignedToId ? await userService.getUserById(data.assignedToId) : null
       
-      return {
+      const result = {
         id: docSnap.id,
         ...data,
         createdBy,
         assignedTo
       } as RequestWithUsers
+      
+      console.log('Final result:', result)
+      return result
     } catch (error) {
       console.error('更新请求失败:', error)
       return null

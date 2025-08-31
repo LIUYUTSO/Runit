@@ -172,6 +172,8 @@ export default function MobilePage() {
   const updateRequestStatus = async (requestId: string, status: string) => {
     try {
       setIsLoading(true)
+      console.log('Updating request status:', requestId, 'to', status)
+      
       const response = await fetch(`/api/requests/${requestId}`, {
         method: 'PATCH',
         headers: {
@@ -180,18 +182,36 @@ export default function MobilePage() {
         body: JSON.stringify({ status }),
       })
 
+      console.log('Response status:', response.status)
+      
       if (response.ok) {
+        const result = await response.json()
+        console.log('Update result:', result)
         toast.success('Status updated successfully')
-        await fetchRequests()
-        // Switch to completed tab if marking as completed
+        
+        // 立即更新本地状态
+        setRequests(prevRequests => 
+          prevRequests.map(req => 
+            req.id === requestId 
+              ? { ...req, status, completedAt: status === 'COMPLETED' ? new Date().toISOString() : req.completedAt }
+              : req
+          )
+        )
+        
+        // 如果标记为完成，切换到completed标签页
         if (status === 'COMPLETED') {
-          setActiveTab('completed')
+          setTimeout(() => {
+            setActiveTab('completed')
+          }, 500) // 延迟500ms让用户看到成功消息
         }
       } else {
-        toast.error('Failed to update status')
+        const errorData = await response.json()
+        console.error('Update failed:', errorData)
+        toast.error(`Failed to update status: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
-      toast.error('Failed to update status')
+      console.error('Update request error:', error)
+      toast.error('Failed to update status: Network error')
     } finally {
       setIsLoading(false)
     }
