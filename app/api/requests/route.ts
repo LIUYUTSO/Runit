@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { requestService } from '@/lib/firebaseService'
 
 // 获取所有需求
 export async function GET() {
   try {
-    const requests = await prisma.request.findMany({
-      include: {
-        createdBy: true,
-        assignedTo: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
-    
+    const requests = await requestService.getAllRequests()
     return NextResponse.json(requests)
   } catch (error) {
     console.error('获取需求列表失败:', error)
@@ -38,26 +29,28 @@ export async function POST(request: NextRequest) {
       assignedToId,
     } = body
 
-    const newRequest = await prisma.request.create({
-      data: {
-        roomNumber,
-        guestName,
-        requestType,
-        priority,
-        description,
-        notes,
-        location,
-        createdById,
-        assignedToId,
-      },
-      include: {
-        createdBy: true,
-        assignedTo: true,
-      },
+    const newRequest = await requestService.createRequest({
+      roomNumber,
+      guestName,
+      requestType,
+      priority,
+      description,
+      notes,
+      location,
+      createdById,
+      assignedToId,
     })
 
-    return NextResponse.json(newRequest, { status: 201 })
+    if (newRequest) {
+      return NextResponse.json(newRequest, { status: 201 })
+    } else {
+      return NextResponse.json(
+        { error: '创建需求失败' },
+        { status: 500 }
+      )
+    }
   } catch (error) {
+    console.error('创建需求失败:', error)
     return NextResponse.json(
       { error: '创建需求失败' },
       { status: 500 }

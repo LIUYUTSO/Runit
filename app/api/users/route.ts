@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { userService } from '@/lib/firebaseService'
 
 // 获取所有用户
 export async function GET() {
   try {
-    const users = await prisma.user.findMany({
-      orderBy: {
-        name: 'asc',
-      },
-    })
-    
+    const users = await userService.getAllUsers()
     return NextResponse.json(users)
   } catch (error) {
     console.error('获取用户列表失败:', error)
@@ -24,17 +19,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, role, email, phone } = body
 
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        role,
-        email,
-        phone,
-      },
+    const newUser = await userService.createUser({
+      name,
+      role,
+      email,
+      phone,
     })
 
-    return NextResponse.json(newUser, { status: 201 })
+    if (newUser) {
+      return NextResponse.json(newUser, { status: 201 })
+    } else {
+      return NextResponse.json(
+        { error: '创建用户失败' },
+        { status: 500 }
+      )
+    }
   } catch (error) {
+    console.error('创建用户失败:', error)
     return NextResponse.json(
       { error: '创建用户失败' },
       { status: 500 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { requestService } from '@/lib/firebaseService'
 
 // 更新需求状态
 export async function PATCH(
@@ -10,22 +10,22 @@ export async function PATCH(
     const body = await request.json()
     const { status, assignedToId, notes } = body
 
-    const updatedRequest = await prisma.request.update({
-      where: { id: params.id },
-      data: {
-        status,
-        assignedToId,
-        notes,
-        completedAt: status === 'COMPLETED' ? new Date() : null,
-      },
-      include: {
-        createdBy: true,
-        assignedTo: true,
-      },
+    const updatedRequest = await requestService.updateRequest(params.id, {
+      status,
+      assignedToId,
+      notes,
     })
 
-    return NextResponse.json(updatedRequest)
+    if (updatedRequest) {
+      return NextResponse.json(updatedRequest)
+    } else {
+      return NextResponse.json(
+        { error: '更新需求失败' },
+        { status: 500 }
+      )
+    }
   } catch (error) {
+    console.error('更新需求失败:', error)
     return NextResponse.json(
       { error: '更新需求失败' },
       { status: 500 }
@@ -39,12 +39,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.request.delete({
-      where: { id: params.id },
-    })
-
-    return NextResponse.json({ message: '需求已删除' })
+    const success = await requestService.deleteRequest(params.id)
+    
+    if (success) {
+      return NextResponse.json({ message: '需求已删除' })
+    } else {
+      return NextResponse.json(
+        { error: '删除需求失败' },
+        { status: 500 }
+      )
+    }
   } catch (error) {
+    console.error('删除需求失败:', error)
     return NextResponse.json(
       { error: '删除需求失败' },
       { status: 500 }
