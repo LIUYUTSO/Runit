@@ -41,6 +41,12 @@ export interface Request {
   completedAt?: any
 }
 
+// 扩展的Request类型，包含关联的用户信息
+export interface RequestWithUsers extends Request {
+  createdBy: User | null
+  assignedTo: User | null
+}
+
 // 用户相关操作
 export const userService = {
   // 获取所有用户
@@ -99,7 +105,7 @@ export const userService = {
 // 请求相关操作
 export const requestService = {
   // 获取所有请求
-  async getAllRequests(): Promise<Request[]> {
+  async getAllRequests(): Promise<RequestWithUsers[]> {
     try {
       const q = query(collection(db, 'requests'), orderBy('createdAt', 'desc'))
       const querySnapshot = await getDocs(q)
@@ -114,7 +120,7 @@ export const requestService = {
             ...data,
             createdBy,
             assignedTo
-          } as Request
+          } as RequestWithUsers
         })
       )
       return requests
@@ -125,7 +131,7 @@ export const requestService = {
   },
 
   // 创建请求
-  async createRequest(requestData: Partial<Omit<Request, 'id' | 'createdAt' | 'updatedAt'>> & { description: string; requestType: Request['requestType']; priority: Request['priority']; createdById: string }): Promise<Request | null> {
+  async createRequest(requestData: Partial<Omit<Request, 'id' | 'createdAt' | 'updatedAt'>> & { description: string; requestType: Request['requestType']; priority: Request['priority']; createdById: string }): Promise<RequestWithUsers | null> {
     try {
       // 设置默认值
       const dataWithDefaults = {
@@ -154,7 +160,7 @@ export const requestService = {
         ...data,
         createdBy,
         assignedTo
-      } as Request
+      } as RequestWithUsers
     } catch (error) {
       console.error('创建请求失败:', error)
       return null
@@ -162,7 +168,7 @@ export const requestService = {
   },
 
   // 更新请求
-  async updateRequest(id: string, updateData: Partial<Request>): Promise<Request | null> {
+  async updateRequest(id: string, updateData: Partial<Request>): Promise<RequestWithUsers | null> {
     try {
       const docRef = doc(db, 'requests', id)
       await updateDoc(docRef, {
@@ -181,7 +187,7 @@ export const requestService = {
         ...data,
         createdBy,
         assignedTo
-      } as Request
+      } as RequestWithUsers
     } catch (error) {
       console.error('更新请求失败:', error)
       return null
