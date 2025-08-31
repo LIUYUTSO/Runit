@@ -52,63 +52,62 @@ export default function SupervisorPage() {
       setIsLoading(true)
       const response = await fetch('/api/requests')
       if (!response.ok) {
-        throw new Error('API 請求失敗')
+        throw new Error('API request failed')
       }
       const data = await response.json()
-      // 确保 data 是数组
       setRequests(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error('獲取需求列表失敗:', error)
-      // 使用模拟数据作为后备
+      console.error('Failed to fetch requests:', error)
+      // Fallback mock data
       const mockData: Request[] = [
         {
           id: 'mock-1',
           roomNumber: '101',
-          guestName: '陳先生',
+          guestName: 'Mr. Chen',
           requestType: 'HOUSEKEEPING',
           priority: 'HIGH',
           status: 'PENDING',
-          description: '需要額外的毛巾和浴袍',
-          notes: '客人明天早上需要',
-          location: '1樓',
+          description: 'Need extra towels and bathrobes',
+          notes: 'Guest needs them tomorrow morning',
+          location: '1st Floor',
           createdAt: new Date().toISOString(),
           completedAt: '',
-          createdBy: { id: '1', name: '張主管' },
+          createdBy: { id: '1', name: 'Supervisor' },
           assignedTo: null,
         },
         {
           id: 'mock-2',
           roomNumber: '205',
-          guestName: '林小姐',
+          guestName: 'Ms. Lin',
           requestType: 'AMENITIES',
           priority: 'MEDIUM',
           status: 'IN_PROGRESS',
-          description: '需要補充洗髮精和沐浴乳',
+          description: 'Need shampoo and body wash refill',
           notes: '',
-          location: '2樓',
+          location: '2nd Floor',
           createdAt: new Date().toISOString(),
           completedAt: '',
-          createdBy: { id: '1', name: '張主管' },
-          assignedTo: { id: '2', name: '李房務員' },
+          createdBy: { id: '1', name: 'Supervisor' },
+          assignedTo: { id: '2', name: 'House Person 1' },
         },
         {
           id: 'mock-3',
           roomNumber: '312',
-          guestName: '黃先生',
+          guestName: 'Mr. Huang',
           requestType: 'MAINTENANCE',
           priority: 'URGENT',
           status: 'PENDING',
-          description: '空調不冷，需要維修',
-          notes: '客人投訴房間太熱',
-          location: '3樓',
+          description: 'AC not working, needs repair',
+          notes: 'Guest complains room is too hot',
+          location: '3rd Floor',
           createdAt: new Date().toISOString(),
           completedAt: '',
-          createdBy: { id: '1', name: '張主管' },
+          createdBy: { id: '1', name: 'Supervisor' },
           assignedTo: null,
         }
       ]
       setRequests(mockData)
-      toast.success('使用模擬數據（數據庫未連接）')
+      toast.success('Using mock data (database not connected)')
     } finally {
       setIsLoading(false)
     }
@@ -118,22 +117,21 @@ export default function SupervisorPage() {
     try {
       const response = await fetch('/api/users')
       if (!response.ok) {
-        throw new Error('API 請求失敗')
+        throw new Error('API request failed')
       }
       const data = await response.json()
-      // 确保 data 是数组
       const usersArray = Array.isArray(data) ? data : []
       setUsers(usersArray.filter((user: User) => user.role === 'HOUSE_PERSON' || user.role === 'RUNNER'))
     } catch (error) {
-      console.error('獲取用戶列表失敗:', error)
-      // 使用模拟数据作为后备
+      console.error('Failed to fetch users:', error)
+      // Fallback mock data
       const mockUsers: User[] = [
-        { id: '1', name: '李房務員', role: 'HOUSE_PERSON' },
-        { id: '2', name: '王房務員', role: 'HOUSE_PERSON' },
-        { id: '3', name: '陳跑腿', role: 'RUNNER' },
+        { id: '1', name: 'House Person 1', role: 'HOUSE_PERSON' },
+        { id: '2', name: 'House Person 2', role: 'HOUSE_PERSON' },
+        { id: '3', name: 'Runner 1', role: 'RUNNER' },
       ]
       setUsers(mockUsers)
-      toast.success('使用模擬用戶數據（數據庫未連接）')
+      toast.success('Using mock user data (database not connected)')
     }
   }
 
@@ -149,13 +147,13 @@ export default function SupervisorPage() {
       })
 
       if (response.ok) {
-        toast.success('狀態更新成功')
+        toast.success('Status updated successfully')
         await fetchRequests()
       } else {
-        toast.error('更新失敗')
+        toast.error('Failed to update status')
       }
     } catch (error) {
-      toast.error('更新失敗')
+      toast.error('Failed to update status')
     } finally {
       setIsLoading(false)
     }
@@ -203,8 +201,8 @@ export default function SupervisorPage() {
                 ← HOME
               </Link>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-black">需求管理系統</h1>
-                <p className="text-sm text-gray-600">管理前台需求與任務分配</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-black">Request Management System</h1>
+                <p className="text-sm text-gray-600">Manage front desk requests and task assignments</p>
               </div>
             </div>
             <button
@@ -212,8 +210,8 @@ export default function SupervisorPage() {
               className="bg-white text-black px-4 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors font-medium rounded flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">新增需求</span>
-              <span className="sm:hidden">新增</span>
+              <span className="hidden sm:inline">New Request</span>
+              <span className="sm:hidden">New</span>
             </button>
           </div>
         </div>
@@ -228,7 +226,7 @@ export default function SupervisorPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="搜尋房間號碼、客人姓名或描述..."
+                  placeholder="Search room number, guest name or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border-2 border-black focus:outline-none focus:border-black rounded"
@@ -241,11 +239,11 @@ export default function SupervisorPage() {
                 onChange={(e) => setFilter(e.target.value)}
                 className="px-4 py-3 border-2 border-black focus:outline-none focus:border-black rounded min-w-[140px]"
               >
-                <option value="all">所有狀態</option>
-                <option value="PENDING">待處理</option>
-                <option value="IN_PROGRESS">進行中</option>
-                <option value="COMPLETED">已完成</option>
-                <option value="CANCELLED">已取消</option>
+                <option value="all">All Status</option>
+                <option value="PENDING">Pending</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
           </div>
@@ -259,7 +257,7 @@ export default function SupervisorPage() {
                 <Clock className="w-5 h-5 text-black" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">待處理</p>
+                <p className="text-xs font-medium text-gray-600">PENDING</p>
                 <p className="text-xl font-bold text-black">
                   {requests.filter(r => r.status === 'PENDING').length}
                 </p>
@@ -272,7 +270,7 @@ export default function SupervisorPage() {
                 <AlertCircle className="w-5 h-5 text-black" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">進行中</p>
+                <p className="text-xs font-medium text-gray-600">IN PROGRESS</p>
                 <p className="text-xl font-bold text-black">
                   {requests.filter(r => r.status === 'IN_PROGRESS').length}
                 </p>
@@ -285,7 +283,7 @@ export default function SupervisorPage() {
                 <CheckCircle className="w-5 h-5 text-black" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">已完成</p>
+                <p className="text-xs font-medium text-gray-600">COMPLETED</p>
                 <p className="text-xl font-bold text-black">
                   {requests.filter(r => r.status === 'COMPLETED').length}
                 </p>
@@ -298,7 +296,7 @@ export default function SupervisorPage() {
                 <User className="w-5 h-5 text-black" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">總計</p>
+                <p className="text-xs font-medium text-gray-600">TOTAL</p>
                 <p className="text-xl font-bold text-black">{requests.length}</p>
               </div>
             </div>
@@ -308,21 +306,21 @@ export default function SupervisorPage() {
         {/* Request List */}
         <div className="bg-white border-2 border-black rounded-lg overflow-hidden">
           <div className="px-4 sm:px-6 py-4 border-b-2 border-black">
-            <h2 className="text-lg font-bold text-black">需求列表</h2>
+            <h2 className="text-lg font-bold text-black">Request List</h2>
           </div>
           
           {isLoading && (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
-              <p className="text-sm text-gray-600 mt-2">載入中...</p>
+              <p className="text-sm text-gray-600 mt-2">Loading...</p>
             </div>
           )}
           
           {!isLoading && filteredRequests.length === 0 && (
             <div className="text-center py-12 text-gray-500">
               <div className="text-4xl mb-4">📋</div>
-              <p className="text-lg font-medium">沒有找到符合條件的需求</p>
-              <p className="text-sm mt-2">嘗試調整搜尋條件或篩選器</p>
+              <p className="text-lg font-medium">No requests found matching criteria</p>
+              <p className="text-sm mt-2">Try adjusting search terms or filters</p>
             </div>
           )}
           
@@ -335,20 +333,20 @@ export default function SupervisorPage() {
                       <div className="flex items-center gap-3 mb-3">
                         <div className={`w-3 h-3 rounded-full ${getPriorityColor(request.priority)}`}></div>
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                          {request.roomNumber ? `房間 ${request.roomNumber}` : '公共區域'}
+                          {request.roomNumber ? `Room ${request.roomNumber}` : 'Public Area'}
                         </h3>
                         <span className={`px-3 py-1 text-xs font-medium border rounded-full ${getStatusColor(request.status)}`}>
-                          {request.status === 'PENDING' && '待處理'}
-                          {request.status === 'IN_PROGRESS' && '進行中'}
-                          {request.status === 'COMPLETED' && '已完成'}
-                          {request.status === 'CANCELLED' && '已取消'}
+                          {request.status === 'PENDING' && 'PENDING'}
+                          {request.status === 'IN_PROGRESS' && 'IN PROGRESS'}
+                          {request.status === 'COMPLETED' && 'COMPLETED'}
+                          {request.status === 'CANCELLED' && 'CANCELLED'}
                         </span>
                       </div>
                       
                       {request.guestName && (
                         <p className="text-sm text-gray-600 mb-2 flex items-center">
                           <User className="w-4 h-4 mr-2 text-gray-500" />
-                          客人: {request.guestName}
+                          Guest: {request.guestName}
                         </p>
                       )}
                       
@@ -358,7 +356,7 @@ export default function SupervisorPage() {
                         <span className="bg-gray-100 px-2 py-1 rounded">{request.requestType}</span>
                         <span className="bg-gray-100 px-2 py-1 rounded">{request.priority}</span>
                         <span className="text-gray-400">
-                          {new Date(request.createdAt).toLocaleString('zh-TW')}
+                          {new Date(request.createdAt).toLocaleString('en-US')}
                         </span>
                         {request.location && (
                           <span className="flex items-center bg-gray-100 px-2 py-1 rounded">
@@ -370,7 +368,7 @@ export default function SupervisorPage() {
                       
                       {request.notes && (
                         <p className="text-sm text-gray-600 bg-gray-50 p-3 border border-gray-200 rounded mb-3">
-                          <strong>備註:</strong> {request.notes}
+                          <strong>Notes:</strong> {request.notes}
                         </p>
                       )}
                     </div>
@@ -382,7 +380,7 @@ export default function SupervisorPage() {
                             onChange={(e) => updateRequestStatus(request.id, 'IN_PROGRESS', e.target.value)}
                             className="px-3 py-2 text-sm border-2 border-black focus:outline-none bg-white text-black rounded"
                           >
-                            <option value="">分配給...</option>
+                            <option value="">Assign to...</option>
                             {users.map(user => (
                               <option key={user.id} value={user.id}>{user.name}</option>
                             ))}
@@ -391,7 +389,7 @@ export default function SupervisorPage() {
                             onClick={() => updateRequestStatus(request.id, 'COMPLETED')}
                             className="px-3 py-2 text-sm bg-green-500 text-white border-2 border-green-500 hover:bg-green-600 transition-colors rounded"
                           >
-                            標記完成
+                            Mark Complete
                           </button>
                         </>
                       )}
@@ -401,13 +399,13 @@ export default function SupervisorPage() {
                           onClick={() => updateRequestStatus(request.id, 'COMPLETED')}
                           className="px-3 py-2 text-sm bg-green-500 text-white border-2 border-green-500 hover:bg-green-600 transition-colors rounded"
                         >
-                          標記完成
+                          Mark Complete
                         </button>
                       )}
                       
                       {request.assignedTo && (
                         <p className="text-sm text-gray-600 bg-gray-100 p-2 rounded">
-                          <strong>分配給:</strong> {request.assignedTo.name}
+                          <strong>Assigned to:</strong> {request.assignedTo.name}
                         </p>
                       )}
                     </div>

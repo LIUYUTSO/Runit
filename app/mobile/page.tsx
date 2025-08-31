@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Home, List, CheckCircle, Clock, MapPin, User, Phone } from 'lucide-react'
+import { Plus, Home, List, CheckCircle, Clock, MapPin, User, Phone, Radio, UserCheck } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface Request {
@@ -30,8 +30,9 @@ interface Request {
 export default function MobilePage() {
   const [requests, setRequests] = useState<Request[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [activeTab, setActiveTab] = useState('tasks')
+  const [activeTab, setActiveTab] = useState('my-tasks')
   const [currentUser, setCurrentUser] = useState('')
+  const [currentUserId, setCurrentUserId] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   // 表单状态
@@ -47,8 +48,9 @@ export default function MobilePage() {
 
   useEffect(() => {
     fetchRequests()
-    // 模拟当前用户
-    setCurrentUser('House Person 1')
+    // Set current user as Runner
+    setCurrentUser('Runner 1')
+    setCurrentUserId('runner-user-id')
   }, [])
 
   const fetchRequests = async () => {
@@ -56,48 +58,47 @@ export default function MobilePage() {
       setIsLoading(true)
       const response = await fetch('/api/requests')
       if (!response.ok) {
-        throw new Error('API 請求失敗')
+        throw new Error('API request failed')
       }
       const data = await response.json()
-      // 确保 data 是数组
       setRequests(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error('獲取需求列表失敗:', error)
-      // 使用模拟数据作为后备
+      console.error('Failed to fetch requests:', error)
+      // Fallback mock data
       const mockData: Request[] = [
         {
           id: 'mock-1',
           roomNumber: '101',
-          guestName: '陳先生',
+          guestName: 'Mr. Chen',
           requestType: 'HOUSEKEEPING',
           priority: 'HIGH',
           status: 'PENDING',
-          description: '需要額外的毛巾和浴袍',
-          notes: '客人明天早上需要',
-          location: '1樓',
+          description: 'Need extra towels and bathrobes',
+          notes: 'Guest needs them tomorrow morning',
+          location: '1st Floor',
           createdAt: new Date().toISOString(),
           completedAt: '',
-          createdBy: { id: '1', name: '張主管' },
+          createdBy: { id: '1', name: 'Supervisor' },
           assignedTo: null,
         },
         {
           id: 'mock-2',
           roomNumber: '205',
-          guestName: '林小姐',
+          guestName: 'Ms. Lin',
           requestType: 'AMENITIES',
           priority: 'MEDIUM',
           status: 'IN_PROGRESS',
-          description: '需要補充洗髮精和沐浴乳',
+          description: 'Need shampoo and body wash refill',
           notes: '',
-          location: '2樓',
+          location: '2nd Floor',
           createdAt: new Date().toISOString(),
           completedAt: '',
-          createdBy: { id: '1', name: '張主管' },
-          assignedTo: { id: '2', name: '李房務員' },
+          createdBy: { id: '1', name: 'Supervisor' },
+          assignedTo: { id: 'runner-user-id', name: 'Runner 1' },
         }
       ]
       setRequests(mockData)
-      toast.success('使用模擬數據（數據庫未連接）')
+      toast.success('Using mock data (database not connected)')
     } finally {
       setIsLoading(false)
     }
@@ -114,12 +115,12 @@ export default function MobilePage() {
         },
         body: JSON.stringify({
           ...formData,
-          createdById: 'temp-user-id', // 实际应用中应该从认证系统获取
+          createdById: currentUserId,
         }),
       })
 
       if (response.ok) {
-        toast.success('需求創建成功')
+        toast.success('Request created successfully')
         setShowCreateForm(false)
         setFormData({
           roomNumber: '',
@@ -130,13 +131,12 @@ export default function MobilePage() {
           notes: '',
           location: '',
         })
-        // 立即重新获取数据
         await fetchRequests()
       } else {
-        toast.error('創建失敗')
+        toast.error('Failed to create request')
       }
     } catch (error) {
-      toast.error('創建失敗')
+      toast.error('Failed to create request')
     } finally {
       setIsLoading(false)
     }
@@ -154,13 +154,13 @@ export default function MobilePage() {
       })
 
       if (response.ok) {
-        toast.success('狀態更新成功')
+        toast.success('Status updated successfully')
         await fetchRequests()
       } else {
-        toast.error('更新失敗')
+        toast.error('Failed to update status')
       }
     } catch (error) {
-      toast.error('更新失敗')
+      toast.error('Failed to update status')
     } finally {
       setIsLoading(false)
     }
@@ -196,71 +196,89 @@ export default function MobilePage() {
     }
   }
 
-  // 按优先级排序的任务
-  const myTasks = requests
-    .filter(r => r.assignedTo?.name === currentUser && r.status !== 'COMPLETED')
+  // Filter requests by status and sort by priority
+  const myAssignedTasks = requests
+    .filter(r => r.assignedTo?.id === currentUserId && r.status !== 'COMPLETED')
     .sort((a, b) => {
-      // 首先按优先级排序
       const priorityDiff = getPriorityOrder(a.priority) - getPriorityOrder(b.priority)
       if (priorityDiff !== 0) return priorityDiff
-      // 然后按创建时间排序（最新的在前）
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
 
-  const completedTasks = requests
-    .filter(r => r.assignedTo?.name === currentUser && r.status === 'COMPLETED')
+  const myCompletedTasks = requests
+    .filter(r => r.assignedTo?.id === currentUserId && r.status === 'COMPLETED')
     .sort((a, b) => new Date(b.completedAt || b.createdAt).getTime() - new Date(a.completedAt || a.createdAt).getTime())
+
+  const allPendingRequests = requests
+    .filter(r => r.status === 'PENDING')
+    .sort((a, b) => {
+      const priorityDiff = getPriorityOrder(a.priority) - getPriorityOrder(b.priority)
+      if (priorityDiff !== 0) return priorityDiff
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+
+  const getCurrentRequests = () => {
+    switch (activeTab) {
+      case 'my-tasks': return myAssignedTasks
+      case 'completed': return myCompletedTasks
+      case 'all-pending': return allPendingRequests
+      default: return myAssignedTasks
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation - 响应式设计 */}
+      {/* Top Navigation */}
       <div className="bg-white border-b-2 border-black sticky top-0 z-10">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link
                 href="/"
-                className="bg-white text-black px-3 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors text-sm font-medium"
+                className="bg-white text-black px-3 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors text-sm font-medium rounded"
               >
                 ← HOME
               </Link>
-              <h1 className="text-xl font-bold text-black">RUNIT</h1>
+              <div className="flex items-center gap-2">
+                <Radio className="w-5 h-5 text-blue-600" />
+                <h1 className="text-xl font-bold text-black">RUNIT</h1>
+              </div>
             </div>
-            {/* 新增按钮占满剩余空间 */}
+            {/* New Request Button */}
             <button
               onClick={() => setShowCreateForm(true)}
-              className="flex-1 ml-4 bg-white text-black py-3 px-4 border-2 border-black hover:bg-black hover:text-white transition-colors font-medium flex items-center justify-center gap-2"
+              className="flex-1 ml-4 bg-blue-600 text-white py-3 px-4 border-2 border-blue-600 hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 rounded"
             >
               <Plus className="w-5 h-5" />
-              <span className="hidden sm:inline">新增需求</span>
+              <span className="hidden sm:inline">New Request</span>
             </button>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Welcome back, {currentUser}</p>
+          <p className="text-sm text-gray-600 mt-2">Runner Dashboard - Radio Request Management</p>
         </div>
       </div>
 
-      {/* 主要内容 */}
+      {/* Main Content */}
       <div className="pb-20">
         {/* Quick Statistics */}
         <div className="px-4 py-4">
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {myTasks.length}
+                {myAssignedTasks.length}
               </div>
-              <div className="text-xs text-gray-600">我的任務</div>
+              <div className="text-xs text-gray-600">MY TASKS</div>
             </div>
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {requests.filter(r => r.status === 'PENDING').length}
+                {allPendingRequests.length}
               </div>
-              <div className="text-xs text-gray-600">待處理</div>
+              <div className="text-xs text-gray-600">PENDING</div>
             </div>
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {completedTasks.length}
+                {myCompletedTasks.length}
               </div>
-              <div className="text-xs text-gray-600">已完成</div>
+              <div className="text-xs text-gray-600">COMPLETED</div>
             </div>
           </div>
         </div>
@@ -269,14 +287,24 @@ export default function MobilePage() {
         <div className="px-4 mb-4">
           <div className="bg-white border-2 border-black p-1 flex rounded-lg overflow-hidden">
             <button
-              onClick={() => setActiveTab('tasks')}
+              onClick={() => setActiveTab('my-tasks')}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-                activeTab === 'tasks'
+                activeTab === 'my-tasks'
                   ? 'bg-black text-white'
                   : 'bg-white text-black hover:bg-gray-100'
               }`}
             >
-              我的任務
+              MY TASKS
+            </button>
+            <button
+              onClick={() => setActiveTab('all-pending')}
+              className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+                activeTab === 'all-pending'
+                  ? 'bg-black text-white'
+                  : 'bg-white text-black hover:bg-gray-100'
+              }`}
+            >
+              ALL PENDING
             </button>
             <button
               onClick={() => setActiveTab('completed')}
@@ -286,7 +314,7 @@ export default function MobilePage() {
                   : 'bg-white text-black hover:bg-gray-100'
               }`}
             >
-              已完成
+              COMPLETED
             </button>
           </div>
         </div>
@@ -296,31 +324,31 @@ export default function MobilePage() {
           {isLoading && (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
-              <p className="text-sm text-gray-600 mt-2">載入中...</p>
+              <p className="text-sm text-gray-600 mt-2">Loading...</p>
             </div>
           )}
           
-          {!isLoading && (activeTab === 'tasks' ? myTasks : completedTasks).map((request) => (
+          {!isLoading && getCurrentRequests().map((request) => (
             <div key={request.id} className="bg-white border-2 border-black p-4 mb-4 rounded-lg shadow-sm">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className={`w-3 h-3 rounded-full ${getPriorityColor(request.priority)}`}></div>
                   <h3 className="font-semibold text-gray-900 text-base">
-                    {request.roomNumber ? `房間 ${request.roomNumber}` : '公共區域'}
+                    {request.roomNumber ? `Room ${request.roomNumber}` : 'Public Area'}
                   </h3>
                 </div>
                 <span className={`px-3 py-1 text-xs font-medium border rounded-full ${getStatusColor(request.status)}`}>
-                  {request.status === 'PENDING' && '待處理'}
-                  {request.status === 'IN_PROGRESS' && '進行中'}
-                  {request.status === 'COMPLETED' && '已完成'}
-                  {request.status === 'CANCELLED' && '已取消'}
+                  {request.status === 'PENDING' && 'PENDING'}
+                  {request.status === 'IN_PROGRESS' && 'IN PROGRESS'}
+                  {request.status === 'COMPLETED' && 'COMPLETED'}
+                  {request.status === 'CANCELLED' && 'CANCELLED'}
                 </span>
               </div>
               
               {request.guestName && (
                 <p className="text-sm text-gray-600 mb-2 flex items-center">
                   <User className="w-4 h-4 mr-2 text-gray-500" />
-                  客人: {request.guestName}
+                  Guest: {request.guestName}
                 </p>
               )}
               
@@ -339,7 +367,7 @@ export default function MobilePage() {
               
               {request.notes && (
                 <p className="text-sm text-gray-600 bg-gray-50 p-3 border border-gray-200 rounded mb-3">
-                  <strong>備註:</strong> {request.notes}
+                  <strong>Notes:</strong> {request.notes}
                 </p>
               )}
               
@@ -350,7 +378,7 @@ export default function MobilePage() {
                       onClick={() => updateRequestStatus(request.id, 'IN_PROGRESS')}
                       className="flex-1 bg-blue-500 text-white py-2 px-3 border-2 border-blue-500 text-sm font-medium hover:bg-blue-600 transition-colors rounded"
                     >
-                      開始工作
+                      START WORKING
                     </button>
                   )}
                   {request.status === 'IN_PROGRESS' && (
@@ -358,26 +386,30 @@ export default function MobilePage() {
                       onClick={() => updateRequestStatus(request.id, 'COMPLETED')}
                       className="flex-1 bg-green-500 text-white py-2 px-3 border-2 border-green-500 text-sm font-medium hover:bg-green-600 transition-colors rounded"
                     >
-                      標記完成
+                      MARK COMPLETE
                     </button>
                   )}
                 </div>
               )}
               
               <div className="text-xs text-gray-400 mt-3">
-                {new Date(request.createdAt).toLocaleString('zh-TW')}
+                {new Date(request.createdAt).toLocaleString('en-US')}
               </div>
             </div>
           ))}
           
-          {!isLoading && (activeTab === 'tasks' ? myTasks : completedTasks).length === 0 && (
+          {!isLoading && getCurrentRequests().length === 0 && (
             <div className="text-center py-12 text-gray-500">
               <div className="text-4xl mb-4">📋</div>
               <p className="text-lg font-medium">
-                {activeTab === 'tasks' ? '目前沒有待處理的任務' : '還沒有完成的任務'}
+                {activeTab === 'my-tasks' && 'No tasks assigned to you'}
+                {activeTab === 'all-pending' && 'No pending requests'}
+                {activeTab === 'completed' && 'No completed tasks'}
               </p>
               <p className="text-sm mt-2">
-                {activeTab === 'tasks' ? '主管會為您分配新的任務' : '完成任務後會顯示在這裡'}
+                {activeTab === 'my-tasks' && 'Supervisor will assign tasks to you'}
+                {activeTab === 'all-pending' && 'New radio requests will appear here'}
+                {activeTab === 'completed' && 'Completed tasks will appear here'}
               </p>
             </div>
           )}
@@ -390,7 +422,7 @@ export default function MobilePage() {
           <div className="bg-white w-full max-h-[90vh] overflow-y-auto rounded-t-2xl">
             <div className="p-4 border-b-2 border-black sticky top-0 bg-white">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-black">新增需求</h2>
+                <h2 className="text-lg font-bold text-black">New Radio Request</h2>
                 <button
                   onClick={() => setShowCreateForm(false)}
                   className="text-black hover:text-gray-600 p-2"
@@ -404,27 +436,27 @@ export default function MobilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    房間號碼
+                    Room Number
                   </label>
                   <input
                     type="text"
                     value={formData.roomNumber}
                     onChange={(e) => setFormData({...formData, roomNumber: e.target.value})}
                     className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                    placeholder="例如: 101"
+                    placeholder="e.g. 101"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    客人姓名
+                    Guest Name
                   </label>
                   <input
                     type="text"
                     value={formData.guestName}
                     onChange={(e) => setFormData({...formData, guestName: e.target.value})}
                     className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                    placeholder="客人姓名"
+                    placeholder="Guest name"
                   />
                 </div>
               </div>
@@ -432,76 +464,76 @@ export default function MobilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    需求類型
+                    Request Type
                   </label>
                   <select
                     value={formData.requestType}
                     onChange={(e) => setFormData({...formData, requestType: e.target.value})}
                     className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
                   >
-                    <option value="HOUSEKEEPING">客房服務</option>
-                    <option value="MAINTENANCE">維修</option>
-                    <option value="AMENITIES">備品</option>
-                    <option value="CLEANING">清潔</option>
-                    <option value="TURNDOWN">開床服務</option>
-                    <option value="OTHER">其他</option>
+                    <option value="HOUSEKEEPING">Housekeeping</option>
+                    <option value="MAINTENANCE">Maintenance</option>
+                    <option value="AMENITIES">Amenities</option>
+                    <option value="CLEANING">Cleaning</option>
+                    <option value="TURNDOWN">Turndown Service</option>
+                    <option value="OTHER">Other</option>
                   </select>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-black mb-2">
-                    優先級
+                    Priority
                   </label>
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({...formData, priority: e.target.value})}
                     className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
                   >
-                    <option value="LOW">低</option>
-                    <option value="MEDIUM">中</option>
-                    <option value="HIGH">高</option>
-                    <option value="URGENT">緊急</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="URGENT">Urgent</option>
                   </select>
                 </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  位置
+                  Location
                 </label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({...formData, location: e.target.value})}
                   className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                  placeholder="例如: 大廳、餐廳、健身房"
+                  placeholder="e.g. Lobby, Restaurant, Gym"
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  描述 *
+                  Description *
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
                   rows={3}
-                  placeholder="請詳細描述需求..."
+                  placeholder="Please describe the request in detail..."
                   required
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  備註
+                  Notes
                 </label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({...formData, notes: e.target.value})}
                   className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
                   rows={2}
-                  placeholder="額外備註..."
+                  placeholder="Additional notes..."
                 />
               </div>
               
@@ -511,14 +543,14 @@ export default function MobilePage() {
                   onClick={() => setShowCreateForm(false)}
                   className="flex-1 py-3 px-4 border-2 border-black bg-white text-black hover:bg-black hover:text-white transition-colors rounded font-medium"
                 >
-                  取消
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 py-3 px-4 bg-black text-white border-2 border-black hover:bg-gray-800 transition-colors rounded font-medium disabled:opacity-50"
+                  className="flex-1 py-3 px-4 bg-blue-600 text-white border-2 border-blue-600 hover:bg-blue-700 transition-colors rounded font-medium disabled:opacity-50"
                 >
-                  {isLoading ? '創建中...' : '創建需求'}
+                  {isLoading ? 'Creating...' : 'Create Request'}
                 </button>
               </div>
             </form>
@@ -530,13 +562,22 @@ export default function MobilePage() {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-black">
         <div className="flex">
           <button
-            onClick={() => setActiveTab('tasks')}
+            onClick={() => setActiveTab('my-tasks')}
             className={`flex-1 py-3 px-4 flex flex-col items-center transition-colors ${
-              activeTab === 'tasks' ? 'text-black' : 'text-gray-600'
+              activeTab === 'my-tasks' ? 'text-black' : 'text-gray-600'
             }`}
           >
-            <List className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium">任務</span>
+            <UserCheck className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">MY TASKS</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('all-pending')}
+            className={`flex-1 py-3 px-4 flex flex-col items-center transition-colors ${
+              activeTab === 'all-pending' ? 'text-black' : 'text-gray-600'
+            }`}
+          >
+            <Clock className="w-5 h-5 mb-1" />
+            <span className="text-xs font-medium">PENDING</span>
           </button>
           <button
             onClick={() => setActiveTab('completed')}
@@ -545,7 +586,7 @@ export default function MobilePage() {
             }`}
           >
             <CheckCircle className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium">已完成</span>
+            <span className="text-xs font-medium">COMPLETED</span>
           </button>
         </div>
       </div>
