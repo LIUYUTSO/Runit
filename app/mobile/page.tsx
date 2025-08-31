@@ -196,7 +196,6 @@ export default function MobilePage() {
       })
 
       console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
       
       if (response.ok) {
         const result = await response.json()
@@ -207,18 +206,23 @@ export default function MobilePage() {
         setRequests(prevRequests => {
           const updated = prevRequests.map(req => 
             req.id === requestId 
-              ? { ...req, status, completedAt: status === 'COMPLETED' ? new Date().toISOString() : req.completedAt }
+              ? { 
+                  ...req, 
+                  status, 
+                  completedAt: status === 'COMPLETED' ? new Date().toISOString() : req.completedAt 
+                }
               : req
           )
           console.log('Updated local state:', updated)
           return updated
         })
         
-        // 如果标记为完成，切换到completed标签页
+        // 如果标记为完成，延迟切换到completed标签页
         if (status === 'COMPLETED') {
           setTimeout(() => {
             setActiveTab('completed')
-          }, 500) // 延迟500ms让用户看到成功消息
+            console.log('Switched to completed tab')
+          }, 1000) // 延迟1秒让用户看到成功消息
         }
       } else {
         const errorData = await response.json()
