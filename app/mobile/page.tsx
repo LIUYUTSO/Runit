@@ -30,7 +30,7 @@ interface Request {
 export default function MobilePage() {
   const [requests, setRequests] = useState<Request[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [activeTab, setActiveTab] = useState('my-tasks')
+  const [activeTab, setActiveTab] = useState('pending')
   const [currentUser, setCurrentUser] = useState('')
   const [currentUserId, setCurrentUserId] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -39,12 +39,13 @@ export default function MobilePage() {
   const [formData, setFormData] = useState({
     roomNumber: '',
     priority: 'MEDIUM',
-    requestType: 'KING_SHEET',
+    requestType: 'NA',
     description: '',
   })
 
   // 酒店常用物品选项
   const hotelItems = [
+    { value: 'NA', label: 'N/A' },
     { value: 'KING_SHEET', label: 'King Sheet' },
     { value: 'QUEEN_SHEET', label: 'Queen Sheet' },
     { value: 'TWIN_SHEET', label: 'Twin Sheet' },
@@ -116,14 +117,14 @@ export default function MobilePage() {
           guestName: 'Ms. Lin',
           requestType: 'TOWEL',
           priority: 'MEDIUM',
-          status: 'IN_PROGRESS',
+          status: 'PENDING',
           description: 'Need extra towels',
           notes: '',
           location: '2nd Floor',
           createdAt: new Date().toISOString(),
           completedAt: '',
           createdBy: { id: '1', name: 'Supervisor' },
-          assignedTo: { id: 'runner-user-id', name: 'Runner 1' },
+          assignedTo: null,
         }
       ]
       setRequests(mockData)
@@ -154,7 +155,7 @@ export default function MobilePage() {
         setFormData({
           roomNumber: '',
           priority: 'MEDIUM',
-          requestType: 'KING_SHEET',
+          requestType: 'NA',
           description: '',
         })
         await fetchRequests()
@@ -182,6 +183,10 @@ export default function MobilePage() {
       if (response.ok) {
         toast.success('Status updated successfully')
         await fetchRequests()
+        // Switch to completed tab if marking as completed
+        if (status === 'COMPLETED') {
+          setActiveTab('completed')
+        }
       } else {
         toast.error('Failed to update status')
       }
@@ -204,11 +209,11 @@ export default function MobilePage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'URGENT': return 'bg-black'
-      case 'HIGH': return 'bg-gray-800'
-      case 'MEDIUM': return 'bg-gray-600'
-      case 'LOW': return 'bg-gray-400'
-      default: return 'bg-gray-500'
+      case 'URGENT': return 'bg-red-300' // 莫兰迪红色
+      case 'HIGH': return 'bg-orange-300' // 莫兰迪橙色
+      case 'MEDIUM': return 'bg-yellow-300' // 莫兰迪黄色
+      case 'LOW': return 'bg-green-300' // 莫兰迪绿色
+      default: return 'bg-gray-300'
     }
   }
 
@@ -223,19 +228,7 @@ export default function MobilePage() {
   }
 
   // Filter requests by status and sort by priority
-  const myAssignedTasks = requests
-    .filter(r => r.assignedTo?.id === currentUserId && r.status !== 'COMPLETED')
-    .sort((a, b) => {
-      const priorityDiff = getPriorityOrder(a.priority) - getPriorityOrder(b.priority)
-      if (priorityDiff !== 0) return priorityDiff
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    })
-
-  const myCompletedTasks = requests
-    .filter(r => r.assignedTo?.id === currentUserId && r.status === 'COMPLETED')
-    .sort((a, b) => new Date(b.completedAt || b.createdAt).getTime() - new Date(a.completedAt || a.createdAt).getTime())
-
-  const allPendingRequests = requests
+  const pendingRequests = requests
     .filter(r => r.status === 'PENDING')
     .sort((a, b) => {
       const priorityDiff = getPriorityOrder(a.priority) - getPriorityOrder(b.priority)
@@ -243,12 +236,15 @@ export default function MobilePage() {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
 
+  const completedRequests = requests
+    .filter(r => r.status === 'COMPLETED')
+    .sort((a, b) => new Date(b.completedAt || b.createdAt).getTime() - new Date(a.completedAt || a.createdAt).getTime())
+
   const getCurrentRequests = () => {
     switch (activeTab) {
-      case 'my-tasks': return myAssignedTasks
-      case 'completed': return myCompletedTasks
-      case 'all-pending': return allPendingRequests
-      default: return myAssignedTasks
+      case 'pending': return pendingRequests
+      case 'completed': return completedRequests
+      default: return pendingRequests
     }
   }
 
@@ -279,66 +275,24 @@ export default function MobilePage() {
       <div className="pb-20">
         {/* Quick Statistics */}
         <div className="px-4 py-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {myAssignedTasks.length}
-              </div>
-              <div className="text-xs text-gray-600">MY TASKS</div>
-            </div>
-            <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
-              <div className="text-xl font-bold text-black">
-                {allPendingRequests.length}
+                {pendingRequests.length}
               </div>
               <div className="text-xs text-gray-600">PENDING</div>
             </div>
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {myCompletedTasks.length}
+                {completedRequests.length}
               </div>
               <div className="text-xs text-gray-600">COMPLETED</div>
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-4 mb-4">
-          <div className="bg-white border-2 border-black p-1 flex rounded-lg overflow-hidden">
-            <button
-              onClick={() => setActiveTab('my-tasks')}
-              className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-                activeTab === 'my-tasks'
-                  ? 'bg-black text-white'
-                  : 'bg-white text-black hover:bg-gray-100'
-              }`}
-            >
-              MY TASKS
-            </button>
-            <button
-              onClick={() => setActiveTab('all-pending')}
-              className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-                activeTab === 'all-pending'
-                  ? 'bg-black text-white'
-                  : 'bg-white text-black hover:bg-gray-100'
-              }`}
-            >
-              ALL PENDING
-            </button>
-            <button
-              onClick={() => setActiveTab('completed')}
-              className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-                activeTab === 'completed'
-                  ? 'bg-black text-white'
-                  : 'bg-white text-black hover:bg-gray-100'
-              }`}
-            >
-              COMPLETED
-            </button>
-          </div>
-        </div>
-
-        {/* New Request Button - Only show in MY TASKS tab */}
-        {activeTab === 'my-tasks' && (
+        {/* New Request Button - Only show in PENDING tab */}
+        {activeTab === 'pending' && (
           <div className="px-4 mb-4">
             <button
               onClick={() => setShowCreateForm(true)}
@@ -402,24 +356,14 @@ export default function MobilePage() {
                 </p>
               )}
               
-              {request.status !== 'COMPLETED' && (
+              {request.status === 'PENDING' && (
                 <div className="flex gap-2">
-                  {request.status === 'PENDING' && (
-                    <button
-                      onClick={() => updateRequestStatus(request.id, 'IN_PROGRESS')}
-                      className="flex-1 bg-white text-black py-2 px-3 border-2 border-black text-sm font-medium hover:bg-black hover:text-white transition-colors rounded"
-                    >
-                      START WORKING
-                    </button>
-                  )}
-                  {request.status === 'IN_PROGRESS' && (
-                    <button
-                      onClick={() => updateRequestStatus(request.id, 'COMPLETED')}
-                      className="flex-1 bg-white text-black py-2 px-3 border-2 border-black text-sm font-medium hover:bg-black hover:text-white transition-colors rounded"
-                    >
-                      MARK COMPLETE
-                    </button>
-                  )}
+                  <button
+                    onClick={() => updateRequestStatus(request.id, 'COMPLETED')}
+                    className="flex-1 bg-white text-black py-2 px-3 border-2 border-black text-sm font-medium hover:bg-black hover:text-white transition-colors rounded"
+                  >
+                    COMPLETED
+                  </button>
                 </div>
               )}
               
@@ -433,13 +377,11 @@ export default function MobilePage() {
             <div className="text-center py-12 text-gray-500">
               <div className="text-4xl mb-4">📋</div>
               <p className="text-lg font-medium">
-                {activeTab === 'my-tasks' && 'No tasks assigned to you'}
-                {activeTab === 'all-pending' && 'No pending requests'}
+                {activeTab === 'pending' && 'No pending requests'}
                 {activeTab === 'completed' && 'No completed tasks'}
               </p>
               <p className="text-sm mt-2">
-                {activeTab === 'my-tasks' && 'Supervisor will assign tasks to you'}
-                {activeTab === 'all-pending' && 'New radio requests will appear here'}
+                {activeTab === 'pending' && 'New radio requests will appear here'}
                 {activeTab === 'completed' && 'Completed tasks will appear here'}
               </p>
             </div>
@@ -497,13 +439,12 @@ export default function MobilePage() {
               
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  Order *
+                  Order
                 </label>
                 <select
                   value={formData.requestType}
                   onChange={(e) => setFormData({...formData, requestType: e.target.value})}
                   className="w-full px-3 py-3 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                  required
                 >
                   {hotelItems.map(item => (
                     <option key={item.value} value={item.value}>{item.label}</option>
@@ -549,18 +490,9 @@ export default function MobilePage() {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-black">
         <div className="flex">
           <button
-            onClick={() => setActiveTab('my-tasks')}
+            onClick={() => setActiveTab('pending')}
             className={`flex-1 py-3 px-4 flex flex-col items-center transition-colors ${
-              activeTab === 'my-tasks' ? 'text-black' : 'text-gray-600'
-            }`}
-          >
-            <UserCheck className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium">MY TASKS</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('all-pending')}
-            className={`flex-1 py-3 px-4 flex flex-col items-center transition-colors ${
-              activeTab === 'all-pending' ? 'text-black' : 'text-gray-600'
+              activeTab === 'pending' ? 'text-black' : 'text-gray-600'
             }`}
           >
             <Clock className="w-5 h-5 mb-1" />
