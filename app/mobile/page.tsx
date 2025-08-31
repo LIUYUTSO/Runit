@@ -38,13 +38,42 @@ export default function MobilePage() {
   // 表单状态
   const [formData, setFormData] = useState({
     roomNumber: '',
-    guestName: '',
-    requestType: 'HOUSEKEEPING',
     priority: 'MEDIUM',
+    requestType: 'KING_SHEET',
     description: '',
-    notes: '',
-    location: '',
   })
+
+  // 酒店常用物品选项
+  const hotelItems = [
+    { value: 'KING_SHEET', label: 'King Sheet' },
+    { value: 'QUEEN_SHEET', label: 'Queen Sheet' },
+    { value: 'TWIN_SHEET', label: 'Twin Sheet' },
+    { value: 'PILLOW', label: 'Pillow' },
+    { value: 'FEATHER_PILLOW', label: 'Feather Pillow' },
+    { value: 'BLANKET', label: 'Blanket' },
+    { value: 'TOWEL', label: 'Towel' },
+    { value: 'BATH_TOWEL', label: 'Bath Towel' },
+    { value: 'HAND_TOWEL', label: 'Hand Towel' },
+    { value: 'WASHCLOTH', label: 'Washcloth' },
+    { value: 'BATHROBE', label: 'Bathrobe' },
+    { value: 'SLIPPERS', label: 'Slippers' },
+    { value: 'KETTLE', label: 'Kettle' },
+    { value: 'COFFEE_MAKER', label: 'Coffee Maker' },
+    { value: 'IRON', label: 'Iron' },
+    { value: 'IRONING_BOARD', label: 'Ironing Board' },
+    { value: 'HAIR_DRYER', label: 'Hair Dryer' },
+    { value: 'SHAMPOO', label: 'Shampoo' },
+    { value: 'CONDITIONER', label: 'Conditioner' },
+    { value: 'BODY_WASH', label: 'Body Wash' },
+    { value: 'SOAP', label: 'Soap' },
+    { value: 'TOILET_PAPER', label: 'Toilet Paper' },
+    { value: 'TISSUE', label: 'Tissue' },
+    { value: 'HANGER', label: 'Hanger' },
+    { value: 'EXTRA_BLANKET', label: 'Extra Blanket' },
+    { value: 'EXTRA_PILLOW', label: 'Extra Pillow' },
+    { value: 'CLEANING_SUPPLIES', label: 'Cleaning Supplies' },
+    { value: 'OTHER', label: 'Other' },
+  ]
 
   useEffect(() => {
     fetchRequests()
@@ -70,10 +99,10 @@ export default function MobilePage() {
           id: 'mock-1',
           roomNumber: '101',
           guestName: 'Mr. Chen',
-          requestType: 'HOUSEKEEPING',
+          requestType: 'KING_SHEET',
           priority: 'HIGH',
           status: 'PENDING',
-          description: 'Need extra towels and bathrobes',
+          description: 'Need extra king sheet',
           notes: 'Guest needs them tomorrow morning',
           location: '1st Floor',
           createdAt: new Date().toISOString(),
@@ -85,10 +114,10 @@ export default function MobilePage() {
           id: 'mock-2',
           roomNumber: '205',
           guestName: 'Ms. Lin',
-          requestType: 'AMENITIES',
+          requestType: 'TOWEL',
           priority: 'MEDIUM',
           status: 'IN_PROGRESS',
-          description: 'Need shampoo and body wash refill',
+          description: 'Need extra towels',
           notes: '',
           location: '2nd Floor',
           createdAt: new Date().toISOString(),
@@ -124,12 +153,9 @@ export default function MobilePage() {
         setShowCreateForm(false)
         setFormData({
           roomNumber: '',
-          guestName: '',
-          requestType: 'HOUSEKEEPING',
           priority: 'MEDIUM',
+          requestType: 'KING_SHEET',
           description: '',
-          notes: '',
-          location: '',
         })
         await fetchRequests()
       } else {
@@ -168,20 +194,20 @@ export default function MobilePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800 border-yellow-300'
-      case 'IN_PROGRESS': return 'bg-blue-100 text-blue-800 border-blue-300'
-      case 'COMPLETED': return 'bg-green-100 text-green-800 border-green-300'
-      case 'CANCELLED': return 'bg-red-100 text-red-800 border-red-300'
+      case 'PENDING': return 'bg-gray-100 text-gray-800 border-gray-300'
+      case 'IN_PROGRESS': return 'bg-gray-200 text-gray-800 border-gray-400'
+      case 'COMPLETED': return 'bg-gray-300 text-gray-800 border-gray-500'
+      case 'CANCELLED': return 'bg-gray-100 text-gray-600 border-gray-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-300'
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'URGENT': return 'bg-red-500'
-      case 'HIGH': return 'bg-orange-500'
-      case 'MEDIUM': return 'bg-yellow-500'
-      case 'LOW': return 'bg-green-500'
+      case 'URGENT': return 'bg-black'
+      case 'HIGH': return 'bg-gray-800'
+      case 'MEDIUM': return 'bg-gray-600'
+      case 'LOW': return 'bg-gray-400'
       default: return 'bg-gray-500'
     }
   }
@@ -240,18 +266,10 @@ export default function MobilePage() {
                 ← HOME
               </Link>
               <div className="flex items-center gap-2">
-                <Radio className="w-5 h-5 text-blue-600" />
+                <Radio className="w-5 h-5 text-gray-600" />
                 <h1 className="text-xl font-bold text-black">RUNIT</h1>
               </div>
             </div>
-            {/* New Request Button */}
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="flex-1 ml-4 bg-blue-600 text-white py-3 px-4 border-2 border-blue-600 hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 rounded"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="hidden sm:inline">New Request</span>
-            </button>
           </div>
           <p className="text-sm text-gray-600 mt-2">Runner Dashboard - Radio Request Management</p>
         </div>
@@ -319,6 +337,19 @@ export default function MobilePage() {
           </div>
         </div>
 
+        {/* New Request Button - Only show in MY TASKS tab */}
+        {activeTab === 'my-tasks' && (
+          <div className="px-4 mb-4">
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="w-full bg-white text-black py-4 px-4 border-2 border-black hover:bg-black hover:text-white transition-colors font-medium flex items-center justify-center gap-2 rounded-lg"
+            >
+              <Plus className="w-5 h-5" />
+              <span>NEW REQUEST</span>
+            </button>
+          </div>
+        )}
+
         {/* Task List */}
         <div className="px-4">
           {isLoading && (
@@ -376,7 +407,7 @@ export default function MobilePage() {
                   {request.status === 'PENDING' && (
                     <button
                       onClick={() => updateRequestStatus(request.id, 'IN_PROGRESS')}
-                      className="flex-1 bg-blue-500 text-white py-2 px-3 border-2 border-blue-500 text-sm font-medium hover:bg-blue-600 transition-colors rounded"
+                      className="flex-1 bg-white text-black py-2 px-3 border-2 border-black text-sm font-medium hover:bg-black hover:text-white transition-colors rounded"
                     >
                       START WORKING
                     </button>
@@ -384,7 +415,7 @@ export default function MobilePage() {
                   {request.status === 'IN_PROGRESS' && (
                     <button
                       onClick={() => updateRequestStatus(request.id, 'COMPLETED')}
-                      className="flex-1 bg-green-500 text-white py-2 px-3 border-2 border-green-500 text-sm font-medium hover:bg-green-600 transition-colors rounded"
+                      className="flex-1 bg-white text-black py-2 px-3 border-2 border-black text-sm font-medium hover:bg-black hover:text-white transition-colors rounded"
                     >
                       MARK COMPLETE
                     </button>
@@ -422,7 +453,7 @@ export default function MobilePage() {
           <div className="bg-white w-full max-h-[90vh] overflow-y-auto rounded-t-2xl">
             <div className="p-4 border-b-2 border-black sticky top-0 bg-white">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-black">New Radio Request</h2>
+                <h2 className="text-lg font-bold text-black">New Request</h2>
                 <button
                   onClick={() => setShowCreateForm(false)}
                   className="text-black hover:text-gray-600 p-2"
@@ -433,107 +464,63 @@ export default function MobilePage() {
             </div>
             
             <form onSubmit={createRequest} className="p-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Room Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.roomNumber}
-                    onChange={(e) => setFormData({...formData, roomNumber: e.target.value})}
-                    className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                    placeholder="e.g. 101"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Guest Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.guestName}
-                    onChange={(e) => setFormData({...formData, guestName: e.target.value})}
-                    className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                    placeholder="Guest name"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Request Type
-                  </label>
-                  <select
-                    value={formData.requestType}
-                    onChange={(e) => setFormData({...formData, requestType: e.target.value})}
-                    className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                  >
-                    <option value="HOUSEKEEPING">Housekeeping</option>
-                    <option value="MAINTENANCE">Maintenance</option>
-                    <option value="AMENITIES">Amenities</option>
-                    <option value="CLEANING">Cleaning</option>
-                    <option value="TURNDOWN">Turndown Service</option>
-                    <option value="OTHER">Other</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">
-                    Priority
-                  </label>
-                  <select
-                    value={formData.priority}
-                    onChange={(e) => setFormData({...formData, priority: e.target.value})}
-                    className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                    <option value="URGENT">Urgent</option>
-                  </select>
-                </div>
-              </div>
-              
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  Location
+                  Room Number *
                 </label>
                 <input
                   type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                  placeholder="e.g. Lobby, Restaurant, Gym"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Description *
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                  rows={3}
-                  placeholder="Please describe the request in detail..."
+                  value={formData.roomNumber}
+                  onChange={(e) => setFormData({...formData, roomNumber: e.target.value})}
+                  className="w-full px-3 py-3 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
+                  placeholder="e.g. 101"
                   required
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  Notes
+                  Priority *
+                </label>
+                <select
+                  value={formData.priority}
+                  onChange={(e) => setFormData({...formData, priority: e.target.value})}
+                  className="w-full px-3 py-3 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
+                  required
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                  <option value="URGENT">Urgent</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">
+                  Order *
+                </label>
+                <select
+                  value={formData.requestType}
+                  onChange={(e) => setFormData({...formData, requestType: e.target.value})}
+                  className="w-full px-3 py-3 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
+                  required
+                >
+                  {hotelItems.map(item => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">
+                  Description
                 </label>
                 <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                  rows={2}
-                  placeholder="Additional notes..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="w-full px-3 py-3 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
+                  rows={3}
+                  placeholder="Additional details..."
                 />
               </div>
               
@@ -548,7 +535,7 @@ export default function MobilePage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 py-3 px-4 bg-blue-600 text-white border-2 border-blue-600 hover:bg-blue-700 transition-colors rounded font-medium disabled:opacity-50"
+                  className="flex-1 py-3 px-4 bg-black text-white border-2 border-black hover:bg-gray-800 transition-colors rounded font-medium disabled:opacity-50"
                 >
                   {isLoading ? 'Creating...' : 'Create Request'}
                 </button>
