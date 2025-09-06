@@ -496,6 +496,8 @@ export default function StriperPage() {
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={formData.roomNumber}
                   onChange={(e) => setFormData({...formData, roomNumber: e.target.value})}
                   className="w-full px-3 py-3 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
