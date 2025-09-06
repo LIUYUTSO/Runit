@@ -17,7 +17,7 @@ import { db } from './firebase'
 export interface User {
   id?: string
   name: string
-  role: 'SUPERVISOR' | 'HOUSE_PERSON' | 'RUNNER'
+  role: 'SUPERVISOR' | 'HOUSE_PERSON' | 'RUNNER' | 'STRIPER'
   email?: string
   phone?: string
   createdAt?: any
@@ -29,6 +29,7 @@ export interface Request {
   roomNumber?: string
   guestName?: string
   requestType: string // 改为string以支持所有酒店物品类型
+  taskCategory: 'MOBILE' | 'STRIPER' | 'GENERAL' // 新增：任務類別
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   description: string

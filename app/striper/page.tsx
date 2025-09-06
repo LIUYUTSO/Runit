@@ -45,36 +45,22 @@ export default function StriperPage() {
     description: '',
   })
 
-  // 酒店常用物品选项
-  const hotelItems = [
-    { value: 'NA', label: 'N/A' },
-    { value: 'KING_SHEET', label: 'King Sheet' },
-    { value: 'QUEEN_SHEET', label: 'Queen Sheet' },
-    { value: 'TWIN_SHEET', label: 'Twin Sheet' },
-    { value: 'PILLOW', label: 'Pillow' },
-    { value: 'FEATHER_PILLOW', label: 'Feather Pillow' },
-    { value: 'BLANKET', label: 'Blanket' },
-    { value: 'TOWEL', label: 'Towel' },
-    { value: 'BATH_TOWEL', label: 'Bath Towel' },
-    { value: 'HAND_TOWEL', label: 'Hand Towel' },
-    { value: 'WASHCLOTH', label: 'Washcloth' },
-    { value: 'BATHROBE', label: 'Bathrobe' },
-    { value: 'SLIPPERS', label: 'Slippers' },
-    { value: 'KETTLE', label: 'Kettle' },
-    { value: 'COFFEE_MAKER', label: 'Coffee Maker' },
-    { value: 'IRON', label: 'Iron' },
-    { value: 'IRONING_BOARD', label: 'Ironing Board' },
-    { value: 'HAIR_DRYER', label: 'Hair Dryer' },
-    { value: 'SHAMPOO', label: 'Shampoo' },
-    { value: 'CONDITIONER', label: 'Conditioner' },
-    { value: 'BODY_WASH', label: 'Body Wash' },
-    { value: 'SOAP', label: 'Soap' },
-    { value: 'TOILET_PAPER', label: 'Toilet Paper' },
-    { value: 'TISSUE', label: 'Tissue' },
-    { value: 'HANGER', label: 'Hanger' },
-    { value: 'EXTRA_BLANKET', label: 'Extra Blanket' },
-    { value: 'EXTRA_PILLOW', label: 'Extra Pillow' },
-    { value: 'CLEANING_SUPPLIES', label: 'Cleaning Supplies' },
+  // Stripping 任務選項
+  const striperItems = [
+    { value: 'ROOM_STRIP', label: 'Room Strip' },
+    { value: 'BATHROOM_STRIP', label: 'Bathroom Strip' },
+    { value: 'BED_STRIP', label: 'Bed Strip' },
+    { value: 'LINEN_STRIP', label: 'Linen Strip' },
+    { value: 'DEEP_CLEAN', label: 'Deep Clean' },
+    { value: 'CARPET_CLEAN', label: 'Carpet Clean' },
+    { value: 'FURNITURE_CLEAN', label: 'Furniture Clean' },
+    { value: 'WINDOW_CLEAN', label: 'Window Clean' },
+    { value: 'BALCONY_CLEAN', label: 'Balcony Clean' },
+    { value: 'MINIBAR_CLEAN', label: 'Minibar Clean' },
+    { value: 'SAFE_CLEAN', label: 'Safe Clean' },
+    { value: 'LIGHT_CLEAN', label: 'Light Clean' },
+    { value: 'AC_CLEAN', label: 'AC Clean' },
+    { value: 'VENT_CLEAN', label: 'Ventilation Clean' },
     { value: 'OTHER', label: 'Other' },
   ]
 
@@ -88,25 +74,25 @@ export default function StriperPage() {
   const fetchRequests = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/requests')
+      const response = await fetch('/api/striper')
       if (!response.ok) {
         throw new Error('API request failed')
       }
       const data = await response.json()
       setRequests(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error('Failed to fetch requests:', error)
-      // Fallback mock data
+      console.error('Failed to fetch striper requests:', error)
+      // Fallback mock data for stripping tasks
       const mockData: Request[] = [
         {
-          id: 'mock-1',
+          id: 'mock-strip-1',
           roomNumber: '101',
           guestName: 'Mr. Chen',
-          requestType: 'KING_SHEET',
+          requestType: 'ROOM_STRIP',
           priority: 'HIGH',
           status: 'PENDING',
-          description: 'Need extra king sheet',
-          notes: 'Guest needs them tomorrow morning',
+          description: 'Room 101 needs stripping - check out cleaning',
+          notes: 'Guest checked out this morning, room needs full stripping',
           location: '1st Floor',
           createdAt: new Date().toISOString(),
           completedAt: '',
@@ -114,14 +100,14 @@ export default function StriperPage() {
           assignedTo: null,
         },
         {
-          id: 'mock-2',
+          id: 'mock-strip-2',
           roomNumber: '205',
           guestName: 'Ms. Lin',
-          requestType: 'TOWEL',
+          requestType: 'BATHROOM_STRIP',
           priority: 'MEDIUM',
           status: 'PENDING',
-          description: 'Need extra towels',
-          notes: '',
+          description: 'Bathroom stripping required - deep clean needed',
+          notes: 'Previous guest had special requirements',
           location: '2nd Floor',
           createdAt: new Date().toISOString(),
           completedAt: '',
@@ -130,7 +116,7 @@ export default function StriperPage() {
         }
       ]
       setRequests(mockData)
-      toast.success('Using mock data (database not connected)')
+      toast.success('Using mock data for stripping tasks')
     } finally {
       setIsLoading(false)
     }
@@ -140,7 +126,7 @@ export default function StriperPage() {
     e.preventDefault()
     try {
       setIsLoading(true)
-      const response = await fetch('/api/requests', {
+      const response = await fetch('/api/striper', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -542,7 +528,7 @@ export default function StriperPage() {
                   onChange={(e) => setFormData({...formData, requestType: e.target.value})}
                   className="w-full px-3 py-3 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
                 >
-                  {hotelItems.map(item => (
+                  {striperItems.map(item => (
                     <option key={item.value} value={item.value}>{item.label}</option>
                   ))}
                 </select>
