@@ -41,7 +41,7 @@ export default function StriperPage() {
   const [formData, setFormData] = useState({
     roomNumber: '',
     priority: 'MEDIUM',
-    requestType: 'NA',
+    requestType: 'ROOM_STRIP', // 預設為 Room Strip
     description: '',
   })
 
@@ -143,7 +143,7 @@ export default function StriperPage() {
         setFormData({
           roomNumber: '',
           priority: 'MEDIUM',
-          requestType: 'NA',
+          requestType: 'ROOM_STRIP',
           description: '',
         })
         await fetchRequests()
@@ -324,15 +324,17 @@ export default function StriperPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {pendingRequests.length}
+                {activeTab === 'pending' ? pendingRequests.length : completedRequests.length}
               </div>
-              <div className="text-xs text-gray-600">PENDING</div>
+              <div className="text-xs text-gray-600">
+                {activeTab === 'pending' ? 'PENDING' : 'COMPLETED'}
+              </div>
             </div>
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {completedRequests.length}
+                {requests.filter(r => r.status === 'COMPLETED').length}
               </div>
-              <div className="text-xs text-gray-600">COMPLETED</div>
+              <div className="text-xs text-gray-600">TOTAL COMPLETED</div>
             </div>
           </div>
         </div>
@@ -519,20 +521,7 @@ export default function StriperPage() {
                 </select>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Order
-                </label>
-                <select
-                  value={formData.requestType}
-                  onChange={(e) => setFormData({...formData, requestType: e.target.value})}
-                  className="w-full px-3 py-3 border-2 border-black focus:outline-none focus:border-black bg-white text-black rounded"
-                >
-                  {striperItems.map(item => (
-                    <option key={item.value} value={item.value}>{item.label}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Order 選單已隱藏，預設使用 Room Strip */}
               
               <div>
                 <label className="block text-sm font-medium text-black mb-2">

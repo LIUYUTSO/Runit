@@ -41,7 +41,7 @@ fi
 echo "🌐 启动开发服务器..."
 echo "访问地址: http://localhost:3000"
 echo ""
-echo "📱 移动端界面: http://localhost:3000/mobile"
+echo "📱 移动端界面: http://localhost:3000/runner"
 echo "💼 主管界面: http://localhost:3000/supervisor"
 echo "📖 演示页面: http://localhost:3000/demo"
 echo ""

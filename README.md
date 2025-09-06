@@ -65,7 +65,7 @@ Visit [http://localhost:3000](http://localhost:3000) to view the application.
 ### Access URLs
 - **Homepage**: http://localhost:3000
 - **Supervisor Interface**: http://localhost:3000/supervisor
-- **Mobile Interface**: http://localhost:3000/mobile
+- **Mobile Interface**: http://localhost:3000/runner
 - **Demo Page**: http://localhost:3000/demo
 
 ### Build for Production

@@ -27,7 +27,7 @@ interface Request {
   } | null
 }
 
-export default function MobilePage() {
+export default function RunnerPage() {
   const [requests, setRequests] = useState<Request[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [activeTab, setActiveTab] = useState('pending')
@@ -327,7 +327,7 @@ export default function MobilePage() {
               </div>
             </div>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Runner Dashboard - Radio Request Management</p>
+          <p className="text-sm text-gray-600 mt-2">Runner Dashboard - Request Management</p>
         </div>
       </div>
 
@@ -338,15 +338,17 @@ export default function MobilePage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {pendingRequests.length}
+                {activeTab === 'pending' ? pendingRequests.length : completedRequests.length}
               </div>
-              <div className="text-xs text-gray-600">PENDING</div>
+              <div className="text-xs text-gray-600">
+                {activeTab === 'pending' ? 'PENDING' : 'COMPLETED'}
+              </div>
             </div>
             <div className="bg-white border-2 border-black p-3 text-center rounded-lg">
               <div className="text-xl font-bold text-black">
-                {completedRequests.length}
+                {requests.filter(r => r.status === 'COMPLETED').length}
               </div>
-              <div className="text-xs text-gray-600">COMPLETED</div>
+              <div className="text-xs text-gray-600">TOTAL COMPLETED</div>
             </div>
           </div>
         </div>

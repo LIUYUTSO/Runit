@@ -69,7 +69,7 @@ export default function DemoPage() {
               TRY SUPERVISOR
             </Link>
             <Link
-              href="/mobile"
+              href="/runner"
               className="bg-white text-black px-6 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors"
             >
               TRY MOBILE

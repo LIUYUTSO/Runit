@@ -20,7 +20,7 @@
 - ✅ 数据可视化展示
 - ✅ 批量操作支持
 
-### 3. 移动端界面 (`/mobile`)
+### 3. 移动端界面 (`/runner`)
 - ✅ 移动端优化的响应式设计
 - ✅ 快速需求记录和状态更新
 - ✅ 个人任务管理和追踪
@@ -139,7 +139,7 @@ npm run dev
 
 - **首页**: http://localhost:3000
 - **主管界面**: http://localhost:3000/supervisor
-- **移动端界面**: http://localhost:3000/mobile
+- **移动端界面**: http://localhost:3000/runner
 - **演示页面**: http://localhost:3000/demo
 
 ## 🔧 开发特性

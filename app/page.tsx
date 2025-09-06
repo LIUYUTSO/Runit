@@ -42,15 +42,15 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* Mobile Interface */}
-          <Link href="/mobile" className="group">
+          {/* Runner Interface */}
+          <Link href="/runner" className="group">
             <div className="bg-white border-2 border-black p-8 hover:bg-black hover:text-white transition-all duration-300">
               <div className="text-center">
                 <div className="w-16 h-16 border-2 border-black rounded-full flex items-center justify-center mx-auto mb-6 group-hover:border-white transition-colors">
                   <Smartphone className="w-8 h-8 text-black group-hover:text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-black mb-4 group-hover:text-white">
-                  MOBILE
+                  RUNNER
                 </h2>
                 <p className="text-gray-600 mb-6 group-hover:text-gray-300">
                   Quick room request recording and task status updates
