@@ -43,15 +43,31 @@ export async function PATCH(
     } else {
       console.error('Service returned null/undefined')
       return NextResponse.json(
-        { error: 'Failed to update request' },
+        { error: 'Failed to update request - service returned null' },
         { status: 500 }
       )
     }
   } catch (error) {
     console.error('Update request error:', error)
+    
+    let errorMessage = 'Failed to update request'
+    let statusCode = 500
+    
+    if (error instanceof Error) {
+      errorMessage = error.message
+      if (error.message.includes('permission-denied')) {
+        statusCode = 403
+      } else if (error.message.includes('not found')) {
+        statusCode = 404
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to update request' },
-      { status: 500 }
+      { 
+        error: errorMessage,
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: statusCode }
     )
   }
 }

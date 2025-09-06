@@ -180,15 +180,25 @@ export const requestService = {
       const docSnapBefore = await getDoc(docRef)
       if (!docSnapBefore.exists()) {
         console.error('Document does not exist:', id)
-        return null
+        throw new Error(`Document with ID ${id} does not exist`)
       }
       
       console.log('Document exists, current data:', docSnapBefore.data())
       
-      // 准备更新数据
-      const updatePayload = {
-        ...updateData,
+      // 准备更新数据 - 只包含需要更新的字段
+      const updatePayload: any = {
         updatedAt: serverTimestamp(),
+      }
+      
+      // 只添加非 undefined 的字段
+      if (updateData.status !== undefined) {
+        updatePayload.status = updateData.status
+      }
+      if (updateData.assignedToId !== undefined) {
+        updatePayload.assignedToId = updateData.assignedToId
+      }
+      if (updateData.notes !== undefined) {
+        updatePayload.notes = updateData.notes
       }
       
       // 如果状态是COMPLETED，添加completedAt时间戳
@@ -200,13 +210,13 @@ export const requestService = {
       
       // 执行更新
       await updateDoc(docRef, updatePayload)
-      console.log('Update operation completed')
+      console.log('Update operation completed successfully')
       
       // 获取更新后的文档
       const docSnapAfter = await getDoc(docRef)
       if (!docSnapAfter.exists()) {
         console.error('Document not found after update:', id)
-        return null
+        throw new Error(`Document ${id} not found after update`)
       }
       
       const data = docSnapAfter.data()
@@ -230,10 +240,18 @@ export const requestService = {
       if (error instanceof Error) {
         console.error('Error details:', {
           message: error.message,
+          code: (error as any).code,
           stack: error.stack
         })
+        
+        // 检查是否是权限错误
+        if ((error as any).code === 'permission-denied') {
+          console.error('Permission denied - check Firestore rules')
+        } else if ((error as any).code === 'not-found') {
+          console.error('Document not found')
+        }
       }
-      return null
+      throw error // 重新抛出错误以便上层处理
     }
   },
 
