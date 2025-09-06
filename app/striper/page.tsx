@@ -27,7 +27,7 @@ interface Request {
   } | null
 }
 
-export default function MobilePage() {
+export default function StriperPage() {
   const [requests, setRequests] = useState<Request[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [activeTab, setActiveTab] = useState('pending')
@@ -80,9 +80,9 @@ export default function MobilePage() {
 
   useEffect(() => {
     fetchRequests()
-    // Set current user as Runner
-    setCurrentUser('Runner 1')
-    setCurrentUserId('runner-user-id')
+    // Set current user as Striper
+    setCurrentUser('Striper 1')
+    setCurrentUserId('striper-user-id')
   }, [])
 
   const fetchRequests = async () => {
@@ -327,7 +327,7 @@ export default function MobilePage() {
               </div>
             </div>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Runner Dashboard - Radio Request Management</p>
+          <p className="text-sm text-gray-600 mt-2">Striper Dashboard - Room Stripping Management</p>
         </div>
       </div>
 
@@ -477,7 +477,7 @@ export default function MobilePage() {
                 {activeTab === 'completed' && 'No completed tasks'}
               </p>
               <p className="text-sm mt-2">
-                {activeTab === 'pending' && 'New radio requests will appear here'}
+                {activeTab === 'pending' && 'New room stripping requests will appear here'}
                 {activeTab === 'completed' && 'Completed tasks will appear here'}
               </p>
             </div>
@@ -607,4 +607,4 @@ export default function MobilePage() {
       </div>
     </div>
   )
-} 
+}
