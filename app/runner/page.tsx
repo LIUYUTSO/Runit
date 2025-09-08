@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Home, List, CheckCircle, Clock, MapPin, User, Phone, Radio, UserCheck, Calendar } from 'lucide-react'
+import { Plus, Home, List, CheckCircle, Clock, MapPin, User, Phone, Radio, UserCheck, Calendar, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAuth } from '@/lib/AuthContext'
 
 interface Request {
   id: string
@@ -28,11 +29,10 @@ interface Request {
 }
 
 export default function RunnerPage() {
+  const { user, signOut } = useAuth()
   const [requests, setRequests] = useState<Request[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [activeTab, setActiveTab] = useState('pending')
-  const [currentUser, setCurrentUser] = useState('')
-  const [currentUserId, setCurrentUserId] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [showCalendar, setShowCalendar] = useState(false)
@@ -80,9 +80,6 @@ export default function RunnerPage() {
 
   useEffect(() => {
     fetchRequests()
-    // Set current user as Runner
-    setCurrentUser('Runner 1')
-    setCurrentUserId('runner-user-id')
   }, [])
 
   const fetchRequests = async () => {
@@ -147,7 +144,7 @@ export default function RunnerPage() {
         },
         body: JSON.stringify({
           ...formData,
-          createdById: currentUserId,
+          createdById: user?.uid || 'anonymous',
         }),
       })
 
@@ -314,17 +311,34 @@ export default function RunnerPage() {
       <div className="bg-white border-b-2 border-black sticky top-0 z-10">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link
-                href="/"
-                className="bg-white text-black px-3 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors text-sm font-medium rounded"
-              >
-                ← HOME
-              </Link>
-              <div className="flex items-center gap-2">
-                <Radio className="w-5 h-5 text-gray-600" />
-                <h1 className="text-xl font-bold text-black">RUNIT</h1>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/"
+                  className="bg-white text-black px-3 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors text-sm font-medium rounded"
+                >
+                  ← HOME
+                </Link>
+                <div className="flex items-center gap-2">
+                  <Radio className="w-5 h-5 text-gray-600" />
+                  <h1 className="text-xl font-bold text-black">RUNIT</h1>
+                </div>
               </div>
+              {user && (
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-black">{user.name}</p>
+                    <p className="text-xs text-gray-600">{user.role}</p>
+                  </div>
+                  <button
+                    onClick={signOut}
+                    className="bg-gray-200 text-black px-3 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors text-sm font-medium rounded flex items-center gap-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    LOGOUT
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <p className="text-sm text-gray-600 mt-2">Runner Dashboard - Request Management</p>
